@@ -1,0 +1,4 @@
+---
+http_host: "wordpress"
+http_conf: "wordpress.conf"
+http_port: "80"

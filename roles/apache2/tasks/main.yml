@@ -1,0 +1,42 @@
+---
+
+    - name: Install Apache2
+      become: yes
+      apt:
+       name: apache2
+       state: latest
+       update_cache: yes
+
+    - name: Create document root
+      become: yes
+      file:
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: "www-data"
+        group: "www-data"
+        mode: '0755'
+
+    - name: Set up Apache VirtualHost
+      become: yes
+      template:
+        src: "wordpress.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+
+    - name: Enable rewrite module
+      become: yes
+      shell: /usr/sbin/a2enmod rewrite
+
+    - name: Enable new site
+      become: yes
+      shell: /usr/sbin/a2ensite {{ http_conf }}
+
+    - name: Disable default Apache site
+      become: yes
+      shell: /usr/sbin/a2dissite 000-default.conf
+
+
+    - name: Restart service apache2
+      become: yes
+      service: 
+        name: apache2
+        state: restarted

@@ -1,0 +1,44 @@
+---
+- hosts: all
+  become: yes
+ 
+  tasks:
+
+  - name: Check wheel group
+    group:
+       name=wheel
+       state=present
+
+  - name: Add serviceuser
+    user:
+      name=serviceuser
+      group=wheel
+      password=ncv9zYZO5do4U
+      shell=/bin/bash
+
+  - name: Allow wheel group to sudo
+    lineinfile:
+       dest: /etc/sudoers
+       state: present
+       regexp: '^wheel'
+       line: '%wheel ALL=NOPASSWD: /bin/systemctl'
+
+  - name: Add sudoers users to wheel group
+    user:
+       name=serviceuser
+       groups=wheel
+       append=yes
+       state=present
+       createhome=no
+
+
+- hosts: web
+  roles:
+     - apache2
+     - php
+     - wordpress
+
+
+- hosts: db
+  roles:
+     - mysql

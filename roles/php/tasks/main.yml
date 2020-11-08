@@ -1,0 +1,7 @@
+---
+- name: Install PHP
+  become: yes
+  apt:
+    name: ['php','php-mysql','python3-pymysql', 'libapache2-mod-php']
+    state: latest
+    update_cache: yes

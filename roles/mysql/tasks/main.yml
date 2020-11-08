@@ -1,0 +1,82 @@
+---
+- name: Install Mysql
+  become: yes
+  apt:
+    name: mysql-server
+    state: latest
+    update_cache: yes
+
+- name: Install pip
+  become: yes
+  apt:
+    name: python3-pip
+    state: latest
+
+- name: Install PyMySQL
+  become: yes
+  pip:
+   name: pymysql
+   state: present
+
+# Mysql Configuration
+- name: Set root password
+  become: yes
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_passwd }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Change /etc/mysql/mysql.conf.d/mysqld.cnf
+  become: yes
+  lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: '^bind-address'
+    line: bind-address = 0.0.0.0
+
+- name: Remove all anonymous user accounts
+  become: yes
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_passwd }}"
+
+- name: Create Database for WP
+  become: yes
+  mysql_db:
+     name: "{{ mysql_db }}"
+     state: present
+     login_user: root
+     login_password: "{{ mysql_root_passwd }}"
+
+- name: Create MySQL user for WP
+  become: yes
+  mysql_user:
+    name: " {{ mysql_user }}"
+    password: "{{ mysql_passwd }}"
+    priv: "wordpress.*:ALL,GRANT"
+    host: "%"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_passwd }}"
+
+- name: Copy preconfigured database
+  copy:
+    src: wordpress.sql
+    dest: /tmp/wordpress.sql
+
+- name: Restore mysql dump
+  become: yes
+  mysql_db:
+     name: wordpress
+     state: import
+     login_user: root
+     login_password: "{{ mysql_root_passwd }}"
+     target: /tmp/wordpress.sql
+
+- name: Restart service mysql
+  become: yes
+  service:
+     name: mysql
+     state: restarted
