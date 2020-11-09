@@ -9,7 +9,7 @@ Restore preconfigured database and wordpress on VM with LDAP auth
 Use your own vagrant ssh key to for ansible.
 All passwords set in vars, serviceuser password is hashed 123
 
-Test on Windows host with VirtualBox
+Tested on Windows host with VirtualBox and Ansible via WSL
 
 TODO:
 * automatically generate all passwords
